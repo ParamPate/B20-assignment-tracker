@@ -2,26 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assignment Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Assignment Tracker</h1>
-    <nav>
-        <a href="/">Home</a> |
-        <a href="/login">Login</a> |
-        <a href="/register">Register</a> |
-        <a href="/logout">Logout</a>
+
+    <nav data-logged-in="{{ 'true' if session.get('user_id') else 'false' }}">
+        <span class="nav-brand">Assignment Tracker</span>
+        <a href="/" id="nav-home">Home</a>
+        <a href="/login" id="nav-login">Login</a>
+        <a href="/register" id="nav-register">Register</a>
+        <a href="/logout" id="nav-logout">Logout</a>
     </nav>
-    <hr>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    {% block body %}{% endblock %}
+
+    <div class="container">
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% block body %}{% endblock %}
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

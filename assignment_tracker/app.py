@@ -23,8 +23,11 @@ def index():
     db = get_db()
     user = db.execute(
         "SELECT username FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    assignments = db.execute(
+        "SELECT * FROM assignments WHERE user_id = ? ORDER BY due_date ASC",
+        (session["user_id"],)).fetchall()
     db.close()
-    return render_template("index.html", username=user["username"])
+    return render_template("index.html", username=user["username"], assignments=assignments)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -93,11 +96,55 @@ def logout():
     return redirect("/login")
 
 
-@app.route("/add")
+@app.route("/add", methods=["GET", "POST"])
 def add():
     if "user_id" not in session:
         return redirect("/login")
-    return "Add Assignment"
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        course = request.form.get("course")
+        due_date = request.form.get("due_date")
+        priority = request.form.get("priority")
+
+        db = get_db()
+        db.execute(
+            "INSERT INTO assignments (user_id, title, course, due_date, priority, completed) VALUES (?, ?, ?, ?, ?, 0)",
+            (session["user_id"], title, course, due_date, priority)
+        )
+        db.commit()
+        db.close()
+
+        flash("Assignment added!")
+        return redirect("/")
+
+    return redirect("/")
+
+
+@app.route("/update/<int:id>", methods=["POST"])
+def update(id):
+    if "user_id" not in session:
+        return redirect("/login")
+    db = get_db()
+    db.execute("UPDATE assignments SET completed = 1 WHERE id = ? AND user_id = ?",
+               (id, session["user_id"]))
+    db.commit()
+    db.close()
+    flash("Assignment marked as done!")
+    return redirect("/")
+
+
+@app.route("/delete/<int:id>", methods=["POST"])
+def delete(id):
+    if "user_id" not in session:
+        return redirect("/login")
+    db = get_db()
+    db.execute("DELETE FROM assignments WHERE id = ? AND user_id = ?",
+               (id, session["user_id"]))
+    db.commit()
+    db.close()
+    flash("Assignment deleted.")
+    return redirect("/")
 
 
 if __name__ == "__main__":
