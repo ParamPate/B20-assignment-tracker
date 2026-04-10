@@ -19,8 +19,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("nav-login").classList.add("disabled-link");
         document.getElementById("nav-register").classList.add("disabled-link");
     } else {
-        // User is not logged in — grey out Home and Logout
+        // User is not logged in — grey out Home, Timer, and Logout
         document.getElementById("nav-home").classList.add("disabled-link");
+        document.getElementById("nav-timer").classList.add("disabled-link");
         document.getElementById("nav-logout").classList.add("disabled-link");
     }
 

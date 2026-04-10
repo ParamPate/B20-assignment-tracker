@@ -230,3 +230,59 @@ nav a.disabled-link {
     pointer-events: none;
     cursor: default;
 }
+
+/* =====================
+   Timer Page
+   ===================== */
+
+/* The big MM:SS countdown number */
+.timer-display {
+    font-size: 52px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #333;
+}
+
+/* Removes the default bottom margin from form-group inside the timer inputs row */
+.timer-inputs-row .form-group {
+    margin-bottom: 0;
+}
+
+/* Each assignment row in the log list — reused in a loop */
+.log-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* Course name shown beside title — reused in a loop */
+.log-row-course {
+    color: #666;
+    font-size: 13px;
+    margin-left: 8px;
+}
+
+/* Due date and studied columns — reused in a loop */
+.log-row-meta {
+    color: #555;
+    font-size: 13px;
+    min-width: 90px;
+}
+
+/* Log form row — reused in a loop */
+.log-row-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Small number input for logging minutes — reused in a loop */
+.log-time-input {
+    width: 65px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}

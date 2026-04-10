@@ -27,6 +27,7 @@ def init_db():
             due_date TEXT NOT NULL,
             priority TEXT DEFAULT 'Medium',
             completed INTEGER DEFAULT 0,
+            time_studied INTEGER DEFAULT 0,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
     """)

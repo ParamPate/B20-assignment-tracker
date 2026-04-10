@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Pomodoro Timer</h2>
+
+<!-- Card 1: Timer -->
+<div class="card">
+    <h3 id="timer-label">Study Time</h3>
+
+    <div style="display: flex; justify-content: center; margin-bottom: 18px;">
+        <span id="timer-display" class="timer-display">25:00</span>
+    </div>
+
+    <!-- Set study and break minutes -->
+    <div class="timer-inputs-row" style="display: flex; gap: 16px; align-items: flex-end; margin-bottom: 18px;">
+        <div class="form-group">
+            <label for="study-minutes">Study (min)</label>
+            <input type="number" id="study-minutes" value="25" min="1" max="60">
+        </div>
+        <div class="form-group">
+            <label for="break-minutes">Break (min)</label>
+            <input type="number" id="break-minutes" value="5" min="1" max="30">
+        </div>
+        <div>
+            <button type="button" id="btn-set">Set</button>
+        </div>
+    </div>
+
+    <!-- Control buttons -->
+    <div style="display: flex; gap: 10px;">
+        <button type="button" id="btn-start">Start</button>
+        <button type="button" id="btn-pause">Pause</button>
+        <button type="button" id="btn-reset">Reset</button>
+    </div>
+
+    <p style="margin-top: 14px; color: #555;">Session study time: <strong id="session-minutes">0</strong> min</p>
+</div>
+
+<!-- Card 2: Log Time to Assignment -->
+<div class="card">
+    <h3>Log Time to Assignment</h3>
+    {% if assignments %}
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for a in assignments %}
+        <div class="log-row">
+            <div style="flex: 1;">
+                <strong>{{ a["title"] }}</strong>
+                <span class="log-row-course">{{ a["course"] }}</span>
+            </div>
+            <div class="log-row-meta">Due: {{ a["due_date"] }}</div>
+            <div class="log-row-meta">Studied: {{ a["time_studied"] }} min</div>
+            <form method="POST" action="/log_time/{{ a['id'] }}" class="log-row-form">
+                <input type="number" name="time_studied" id="log-input-{{ a['id'] }}" value="0" min="0" class="log-time-input">
+                <button type="submit">Add</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No incomplete assignments to log time for. Add some on the <a href="/">Home</a> page!</p>
+    {% endif %}
+</div>
+
+
+<script>
+    // Timer state variables
+    var studyMinutes = 25;
+    var breakMinutes = 5;
+    var secondsLeft = studyMinutes * 60;
+    var isStudying = true;
+    var timerInterval = null;
+    var sessionStudySeconds = 0;
+
+    // Display update function
+    function updateDisplay() {
+        var mins = Math.floor(secondsLeft / 60);
+        var secs = secondsLeft % 60;
+        var minsStr = mins < 10 ? "0" + mins : "" + mins;
+        var secsStr = secs < 10 ? "0" + secs : "" + secs;
+        document.getElementById("timer-display").textContent = minsStr + ":" + secsStr;
+    }
+
+    // Switch between study and break
+    function switchMode() {
+        if (isStudying) {
+            // Switch to break
+            isStudying = false;
+            secondsLeft = breakMinutes * 60;
+            document.getElementById("timer-label").textContent = "Break Time";
+        } else {
+            // Switch back to study
+            isStudying = true;
+            secondsLeft = studyMinutes * 60;
+            document.getElementById("timer-label").textContent = "Study Time";
+        }
+        updateDisplay();
+    }
+
+    // Tick function called every second
+    function tick() {
+        if (isStudying) {
+            sessionStudySeconds = sessionStudySeconds + 1;
+            var totalMins = Math.floor(sessionStudySeconds / 60);
+            document.getElementById("session-minutes").textContent = totalMins;
+        }
+
+        secondsLeft = secondsLeft - 1;
+
+        if (secondsLeft < 0) {
+            switchMode();
+        } else {
+            updateDisplay();
+        }
+
+        // Fill log inputs with current session minutes
+        var sessionMins = Math.floor(sessionStudySeconds / 60);
+        var logInputs = document.querySelectorAll("input[id^='log-input-']");
+        for (var i = 0; i < logInputs.length; i++) {
+            logInputs[i].value = sessionMins;
+        }
+    }
+
+    // Button: Start
+    document.getElementById("btn-start").addEventListener("click", function() {
+        if (timerInterval === null) {
+            timerInterval = setInterval(tick, 1000);
+        }
+    });
+
+    // Button: Pause
+    document.getElementById("btn-pause").addEventListener("click", function() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    });
+
+    // Button: Reset
+    document.getElementById("btn-reset").addEventListener("click", function() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isStudying = true;
+        secondsLeft = studyMinutes * 60;
+        sessionStudySeconds = 0;
+        document.getElementById("timer-label").textContent = "Study Time";
+        document.getElementById("session-minutes").textContent = "0";
+        updateDisplay();
+    });
+
+    // Button: Set — update timer lengths from the inputs
+    document.getElementById("btn-set").addEventListener("click", function() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        studyMinutes = parseInt(document.getElementById("study-minutes").value);
+        breakMinutes = parseInt(document.getElementById("break-minutes").value);
+        isStudying = true;
+        secondsLeft = studyMinutes * 60;
+        sessionStudySeconds = 0;
+        document.getElementById("timer-label").textContent = "Study Time";
+        document.getElementById("session-minutes").textContent = "0";
+        updateDisplay();
+    });
+
+    // Initialize display on page load
+    updateDisplay();
+</script>
+{% endblock %}

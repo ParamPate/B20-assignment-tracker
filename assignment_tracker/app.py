@@ -23,6 +23,12 @@ def index():
     db = get_db()
     user = db.execute(
         "SELECT username FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+
+    if user is None:
+        db.close()
+        session.clear()
+        return redirect("/login")
+
     assignments = db.execute(
         "SELECT * FROM assignments WHERE user_id = ? ORDER BY due_date ASC",
         (session["user_id"],)).fetchall()
@@ -145,6 +151,35 @@ def delete(id):
     db.close()
     flash("Assignment deleted.")
     return redirect("/")
+
+
+@app.route("/timer")
+def timer():
+    if "user_id" not in session:
+        return redirect("/login")
+    db = get_db()
+    assignments = db.execute(
+        "SELECT * FROM assignments WHERE user_id = ? AND completed = 0 ORDER BY due_date ASC",
+        (session["user_id"],)
+    ).fetchall()
+    db.close()
+    return render_template("timer.html", assignments=assignments)
+
+
+@app.route("/log_time/<int:id>", methods=["POST"])
+def log_time(id):
+    if "user_id" not in session:
+        return redirect("/login")
+    minutes = request.form.get("time_studied", 0)
+    db = get_db()
+    db.execute(
+        "UPDATE assignments SET time_studied = time_studied + ? WHERE id = ? AND user_id = ?",
+        (minutes, id, session["user_id"])
+    )
+    db.commit()
+    db.close()
+    flash("Time logged!")
+    return redirect("/timer")
 
 
 if __name__ == "__main__":
