@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h2>Welcome, {{ username }}!</h2>
+
+<h3>Add New Assignment</h3>
+<form method="POST" action="/add">
+    <label>Title:</label>
+    <input type="text" name="title" required>
+    <br><br>
+    <label>Course:</label>
+    <input type="text" name="course">
+    <br><br>
+    <label>Due Date:</label>
+    <input type="date" name="due_date" required>
+    <br><br>
+    <label>Priority:</label>
+    <select name="priority">
+        <option value="Low">Low</option>
+        <option value="Medium" selected>Medium</option>
+        <option value="High">High</option>
+    </select>
+    <br><br>
+    <button type="submit">Add Assignment</button>
+</form>
+
+<hr>
+
+<h3>Your Assignments</h3>
+{% if assignments %}
+<table border="1">
+    <tr>
+        <th>Title</th>
+        <th>Course</th>
+        <th>Due Date</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    {% for assignment in assignments %}
+    <tr>
+        <td>{{ assignment["title"] }}</td>
+        <td>{{ assignment["course"] }}</td>
+        <td>{{ assignment["due_date"] }}</td>
+        <td>{{ assignment["priority"] }}</td>
+        <td>{{ "Done" if assignment["completed"] else "Pending" }}</td>
+        <td>
+            {% if not assignment["completed"] %}
+            <form method="POST" action="/update/{{ assignment['id'] }}" style="display:inline;">
+                <button type="submit">Mark Done</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="/delete/{{ assignment['id'] }}" style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No assignments yet. Add one above!</p>
+{% endif %}
+{% endblock %}
