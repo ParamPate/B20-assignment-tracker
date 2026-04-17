@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assignment Tracker</title>
+    <!-- link to style.css for CSS-->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
+    <!-- Top right nav bar to navigate different pages of program-->
     <nav data-logged-in="{{ 'true' if session.get('user_id') else 'false' }}">
         <span class="nav-brand">Assignment Tracker</span>
         <a href="/" id="nav-home">Home</a>
@@ -19,6 +21,7 @@
 
     <div class="container">
 
+        <!-- Main flash skeleton using built-in Flask function to fetch flash messages-->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <ul class="flash-messages">
@@ -33,6 +36,7 @@
 
     </div>
 
+    <!-- link to script.js -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

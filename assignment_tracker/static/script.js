@@ -1,9 +1,11 @@
+// waits for html page to load then runs js code
 document.addEventListener("DOMContentLoaded", function() {
 
-    // Highlight the active nav link based on the current page URL
+    // Fetch all <a> tags and current page 
     var navLinks = document.getElementsByTagName("a");
     var currentPage = window.location.pathname;
 
+    // loop and add active class to each linke
     for (var i = 0; i < navLinks.length; i++) {
         if (navLinks[i].getAttribute("href") === currentPage) {
             navLinks[i].className = "active";
@@ -15,11 +17,11 @@ document.addEventListener("DOMContentLoaded", function() {
     var loggedIn = nav.getAttribute("data-logged-in");
 
     if (loggedIn === "true") {
-        // User is logged in — grey out Login and Register
+        // User is logged in thus grey out Login and Register
         document.getElementById("nav-login").classList.add("disabled-link");
         document.getElementById("nav-register").classList.add("disabled-link");
     } else {
-        // User is not logged in — grey out Home, Timer, and Logout
+        // User is not logged in thus grey out Home, Timer, and Logout
         document.getElementById("nav-home").classList.add("disabled-link");
         document.getElementById("nav-timer").classList.add("disabled-link");
         document.getElementById("nav-logout").classList.add("disabled-link");
