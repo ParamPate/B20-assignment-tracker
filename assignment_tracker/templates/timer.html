@@ -3,7 +3,7 @@
 {% block body %}
 <h2>Pomodoro Timer</h2>
 
-<!-- Card 1: Timer -->
+<!-- Card 1 Timer -->
 <div class="card">
     <h3 id="timer-label">Study Time</h3>
 
@@ -14,11 +14,11 @@
     <!-- Set study and break minutes -->
     <div class="timer-inputs-row" style="display: flex; gap: 16px; align-items: flex-end; margin-bottom: 18px;">
         <div class="form-group">
-            <label for="study-minutes">Study (min)</label>
+            <span>Study (min)</span>
             <input type="number" id="study-minutes" value="25" min="1" max="60">
         </div>
         <div class="form-group">
-            <label for="break-minutes">Break (min)</label>
+            <span>Break (min)</span>
             <input type="number" id="break-minutes" value="5" min="1" max="30">
         </div>
         <div>
@@ -36,7 +36,7 @@
     <p style="margin-top: 14px; color: #555;">Session study time: <strong id="session-minutes">0</strong> min</p>
 </div>
 
-<!-- Card 2: Log Time to Assignment -->
+<!-- Card 2 Log Time to Assignment -->
 <div class="card">
     <h3>Log Time to Assignment</h3>
     {% if assignments %}
@@ -75,8 +75,19 @@
     function updateDisplay() {
         var mins = Math.floor(secondsLeft / 60);
         var secs = secondsLeft % 60;
-        var minsStr = mins < 10 ? "0" + mins : "" + mins;
-        var secsStr = secs < 10 ? "0" + secs : "" + secs;
+        var minsStr;
+        if (mins < 10) {
+            minsStr = "0" + mins;
+        } else {
+            minsStr = "" + mins;
+        }
+        
+        var secsStr;
+        if (secs < 10) {
+            secsStr = "0" + secs;
+        } else {
+            secsStr = "" + secs;
+        }
         document.getElementById("timer-display").textContent = minsStr + ":" + secsStr;
     }
 

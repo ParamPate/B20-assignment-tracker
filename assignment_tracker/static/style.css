@@ -1,6 +1,6 @@
-/* =====================
+/* 
    Base & Reset
-   ===================== */
+*/
 * {
     box-sizing: border-box;
     margin: 0;
@@ -23,9 +23,9 @@ a:hover {
     text-decoration: underline;
 }
 
-/* =====================
+/* 
    Nav Bar
-   ===================== */
+*/
 nav {
     background-color: #3a6ea5;
     padding: 0 20px;
@@ -62,18 +62,18 @@ nav a.active {
     font-weight: bold;
 }
 
-/* =====================
+/*
    Container
-   ===================== */
+*/
 .container {
     max-width: 850px;
     margin: 30px auto;
     padding: 0 16px;
 }
 
-/* =====================
+/* 
    Card
-   ===================== */
+*/
 .card {
     background-color: #fff;
     border: 1px solid #ddd;
@@ -87,9 +87,9 @@ nav a.active {
     color: #333;
 }
 
-/* =====================
+/* 
    Flash Messages
-   ===================== */
+*/
 .flash-messages {
     margin-bottom: 18px;
 }
@@ -110,9 +110,9 @@ nav a.active {
     color: #7a1010;
 }
 
-/* =====================
+/* 
    Forms
-   ===================== */
+*/
 .form-group {
     display: flex;
     flex-direction: column;
@@ -141,9 +141,9 @@ nav a.active {
     border-color: #3a6ea5;
 }
 
-/* =====================
+/* 
    Buttons
-   ===================== */
+*/
 button[type="submit"] {
     background-color: #3a6ea5;
     color: #fff;
@@ -175,9 +175,9 @@ button.btn-success:hover {
     background-color: #256143;
 }
 
-/* =====================
+/* 
    Table
-   ===================== */
+*/
 table {
     width: 100%;
     border-collapse: collapse;
@@ -210,9 +210,9 @@ table td.overdue {
     font-weight: bold;
 }
 
-/* =====================
+/* 
    Misc
-   ===================== */
+*/
 p {
     margin-top: 12px;
     font-size: 14px;
@@ -231,9 +231,9 @@ nav a.disabled-link {
     cursor: default;
 }
 
-/* =====================
+/* 
    Timer Page
-   ===================== */
+*/
 
 /* The big MM:SS countdown number */
 .timer-display {

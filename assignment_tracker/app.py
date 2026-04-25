@@ -36,7 +36,7 @@ def index():
     return render_template("index.html", username=user["username"], assignments=assignments)
 
 
-@app.route("/register", methods=["GET"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form.get("username")
@@ -44,7 +44,7 @@ def register():
         confirmation = request.form.get("confirmation")
 
         if not username or not password or not confirmation:
-            flash("All fields are required.")
+            flash("Field required.") // changed
             return redirect("/register")
 
         if password != confirmation:
