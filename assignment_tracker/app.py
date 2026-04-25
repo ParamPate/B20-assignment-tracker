@@ -36,7 +36,7 @@ def index():
     return render_template("index.html", username=user["username"], assignments=assignments)
 
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=["GET"])
 def register():
     if request.method == "POST":
         username = request.form.get("username")
