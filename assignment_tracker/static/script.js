@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function() {
     for (var j = 0; j < dateCells.length; j++) {
         var dueDate = new Date(dateCells[j].getAttribute("data-date"));
         if (dueDate < today) {
-            dateCells[j].classList.add("overdue");
         }
     }
 
