@@ -1,0 +1,274 @@
+================================================================================
+              HOW THE ASSIGNMENT TRACKER WORKS
+              Database, Routes, and Registration
+================================================================================
+
+
+1. THE DATABASE
+================================================================================
+
+We use SQLite, which is a lightweight database that lives as a single file
+called "database.db" inside the project folder. There is no external database
+server needed — Python talks directly to this file using the sqlite3 module.
+
+
+1a. How the database gets created (init_db.py)
+----------------------------------------------
+
+The file init_db.py is a one-time setup script. You run it once with:
+
+    python init_db.py
+
+It connects to database.db (creating the file if it doesn't exist) and runs
+two CREATE TABLE statements to set up the schema.
+
+
+1b. The schema — what tables exist
+-----------------------------------
+
+TABLE: users
++----------------+---------+--------------------------------------------------+
+| Column         | Type    | Notes                                            |
++----------------+---------+--------------------------------------------------+
+| id             | INTEGER | Primary key. Auto-increments (1, 2, 3, ...).     |
+| username       | TEXT    | Must be UNIQUE — no two users can share a name.  |
+| password_hash  | TEXT    | The hashed version of the password.              |
+|                |         | The plain-text password is NEVER stored.         |
++----------------+---------+--------------------------------------------------+
+
+TABLE: assignments
++----------------+---------+--------------------------------------------------+
+| Column         | Type    | Notes                                            |
++----------------+---------+--------------------------------------------------+
+| id             | INTEGER | Primary key. Auto-increments.                    |
+| user_id        | INTEGER | Foreign key pointing to users.id.                |
+|                |         | This links each assignment to the user who       |
+|                |         | created it, so users only see their own data.    |
+| title          | TEXT    | The assignment name.                             |
+| course         | TEXT    | The course it belongs to (defaults to empty).    |
+| due_date       | TEXT    | The due date as a string (e.g. "2026-04-20").    |
+| priority       | TEXT    | "Low", "Medium", or "High" (defaults to Medium). |
+| completed      | INTEGER | 0 means not done, 1 means done.                 |
+| time_studied   | INTEGER | Total minutes studied (defaults to 0).           |
++----------------+---------+--------------------------------------------------+
+
+The FOREIGN KEY (user_id) REFERENCES users(id) line means that every
+assignment must belong to an existing user. This is how we keep each
+user's assignments separate.
+
+
+1c. How the app connects to the database (get_db)
+---------------------------------------------------
+
+In app.py there is a helper function:
+
+    def get_db():
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+- sqlite3.connect(DATABASE) opens a connection to the database.db file.
+- conn.row_factory = sqlite3.Row tells Python to return rows as
+  dictionary-like objects, so we can write user["username"] instead of
+  user[1]. This makes the code much more readable.
+
+Every route that needs database access calls get_db(), runs its queries,
+then calls db.close() when done.
+
+
+
+2. THE ROUTES
+================================================================================
+
+Flask uses "routes" to connect URLs to Python functions. Each route is
+defined with a decorator like @app.route("/login"). When a user visits
+that URL, Flask runs the function underneath.
+
+
+2a. Full route table
+---------------------
+
+Route               Methods     What it does
+-----------         --------    ------------------------------------------------
+/                   GET         Home page. Shows the logged-in user's
+                                assignments sorted by due date.
+                                If not logged in, redirects to /login.
+
+/register           GET, POST   GET  = show the registration form.
+                                POST = process the form and create an account.
+
+/login              GET, POST   GET  = show the login form.
+                                POST = check credentials. If valid, store the
+                                       user's ID in the session and redirect
+                                       to the home page.
+
+/logout             GET         Clears the session (logs out) and redirects
+                                to /login.
+
+/add                POST        Takes form data (title, course, due_date,
+                                priority) and inserts a new assignment row
+                                for the logged-in user.
+
+/update/<id>        POST        Marks the assignment with that ID as completed
+                                (sets completed = 1).
+
+/delete/<id>        POST        Deletes the assignment with that ID.
+
+/timer              GET         Shows the study timer page with all incomplete
+                                assignments.
+
+/log_time/<id>      POST        Adds the submitted number of minutes to the
+                                assignment's time_studied column.
+
+/docs               GET         Shows the documentation page.
+
+
+2b. GET vs POST
+-----------------
+
+- GET means "give me the page." The browser sends a GET request when you
+  type a URL or click a link.
+- POST means "here is some data, process it." The browser sends a POST
+  request when you submit a form.
+
+Routes like /register handle both: GET returns the form, POST processes
+the submitted data.
+
+
+2c. Authentication guard
+-------------------------
+
+Every route that needs a logged-in user starts with this check:
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+"session" is a Flask feature that stores data in a secure cookie on the
+user's browser. When someone logs in, we store their user ID in the
+session. This check looks for that ID — if it's missing, the user hasn't
+logged in, so we redirect them.
+
+
+
+3. HOW A PERSON GETS ADDED (Registration Flow)
+================================================================================
+
+Here is the step-by-step process of what happens when someone registers:
+
+
+STEP 1: User visits /register
+-------------------------------
+The browser sends a GET request to /register. Flask calls the register()
+function, which returns the register.html template. This template contains
+a form with three fields:
+  - Username
+  - Password
+  - Confirm Password
+
+
+STEP 2: User fills in the form and clicks "Register"
+------------------------------------------------------
+The browser sends a POST request to /register with the form data.
+Flask calls register() again, but this time request.method is "POST".
+
+The function grabs the three values from the form:
+
+    username     = request.form.get("username")
+    password     = request.form.get("password")
+    confirmation = request.form.get("confirmation")
+
+
+STEP 3: Server validates the input
+------------------------------------
+Two checks happen:
+
+  a) Are all three fields filled in?
+     If any field is empty, Flask flashes "All fields are required."
+     and redirects back to /register.
+
+  b) Do password and confirmation match?
+     If not, Flask flashes "Passwords do not match."
+     and redirects back to /register.
+
+
+STEP 4: Hash the password
+--------------------------
+The plain-text password is hashed using Werkzeug's generate_password_hash():
+
+    password_hash = generate_password_hash(password)
+
+This creates a long string like:
+    "pbkdf2:sha256:600000$abc123...$def456..."
+
+The original password is thrown away and NEVER stored. Later, when the
+user logs in, we use check_password_hash() to compare their entered
+password against this hash.
+
+
+STEP 5: Insert into the database
+----------------------------------
+The function opens a database connection and runs:
+
+    INSERT INTO users (username, password_hash) VALUES (?, ?)
+
+with the username and hash as parameters.
+
+The ? placeholders prevent SQL injection — the values are safely escaped
+by SQLite, not pasted into the query string.
+
+Because username is defined as UNIQUE in the schema, if someone tries to
+register with a name that already exists, SQLite raises an IntegrityError.
+We catch that exception and flash "Username already exists."
+
+After a successful insert, we call db.commit() to save the changes,
+then db.close() to release the connection.
+
+
+STEP 6: Redirect to login
+---------------------------
+Flask flashes "Registration successful! Please log in." and sends the
+user to /login with a redirect.
+
+The user is now in the database and can log in.
+
+
+STEP 7: What happens at login
+-------------------------------
+When the user logs in at /login:
+  - We look up the username in the database
+  - We use check_password_hash(stored_hash, entered_password) to verify
+  - If it matches, we store their user ID in the session:
+        session["user_id"] = user["id"]
+  - This keeps them logged in until they log out or close the browser
+
+
+VISUAL FLOW:
+-------------------------------
+
+    User visits /register
+           |
+           v
+    Fills in form & clicks Register
+           |
+           v
+    Server validates input
+           |
+           v
+    Password is hashed (generate_password_hash)
+           |
+           v
+    INSERT INTO users (username, password_hash)
+           |
+           v
+    Redirect to /login
+           |
+           v
+    User logs in -> session["user_id"] is set
+           |
+           v
+    Redirect to / (Home page with assignments)
+
+
+================================================================================
+                          END OF DOCUMENT
+================================================================================
